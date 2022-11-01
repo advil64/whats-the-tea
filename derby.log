@@ -1,0 +1,13 @@
+----------------------------------------------------------------
+Tue Nov 01 18:49:07 EDT 2022:
+Booting Derby version The Apache Software Foundation - Apache Derby - 10.14.2.0 - (1828579): instance a816c00e-0184-3562-552b-00000624c800 
+on database directory /common/home/ac1771/Desktop/cs543_proj/metastore_db with class loader jdk.internal.loader.ClassLoaders$AppClassLoader@1affbebc 
+Loaded from file:/koko/system/spark-3.2.1-bin-hadoop3.2/jars/derby-10.14.2.0.jar
+java.vendor=Ubuntu
+java.runtime.version=11.0.16+8-post-Ubuntu-0ubuntu120.04
+user.dir=/common/home/ac1771/Desktop/cs543_proj
+os.name=Linux
+os.arch=amd64
+os.version=5.15.0-48-generic
+derby.system.home=null
+Database Class Loader started - derby.database.classpath=''
