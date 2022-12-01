@@ -1,50 +1,0 @@
-2022-11-29 15:57:55.236811: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library libcudart.so.11.0
-2022-11-29 15:58:00.590472: I tensorflow/compiler/jit/xla_cpu_device.cc:41] Not creating XLA devices, tf_xla_enable_xla_devices not set
-2022-11-29 15:58:00.592510: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library libcuda.so.1
-2022-11-29 15:58:00.594208: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:941] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
-2022-11-29 15:58:00.594586: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1720] Found device 0 with properties: 
-pciBusID: 0000:01:00.0 name: NVIDIA GeForce GTX 1060 3GB computeCapability: 6.1
-coreClock: 1.7085GHz coreCount: 9 deviceMemorySize: 2.95GiB deviceMemoryBandwidth: 178.99GiB/s
-2022-11-29 15:58:00.594604: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library libcudart.so.11.0
-2022-11-29 15:58:00.594633: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library libcublas.so.11
-2022-11-29 15:58:00.594650: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library libcublasLt.so.11
-2022-11-29 15:58:00.594673: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library libcufft.so.10
-2022-11-29 15:58:00.594695: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library libcurand.so.10
-2022-11-29 15:58:00.596275: W tensorflow/stream_executor/platform/default/dso_loader.cc:60] Could not load dynamic library 'libcusolver.so.10'; dlerror: libcusolver.so.10: cannot open shared object file: No such file or directory
-2022-11-29 15:58:00.596297: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library libcusparse.so.11
-2022-11-29 15:58:00.597899: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library libcudnn.so.8
-2022-11-29 15:58:00.597916: W tensorflow/core/common_runtime/gpu/gpu_device.cc:1757] Cannot dlopen some GPU libraries. Please make sure the missing libraries mentioned above are installed properly if you would like to use GPU. Follow the guide at https://www.tensorflow.org/install/gpu for how to download and setup the required libraries for your platform.
-Skipping registering GPU devices...
-WARNING: An illegal reflective access operation has occurred
-WARNING: Illegal reflective access by org.apache.spark.unsafe.Platform (file:/koko/system/spark-3.2.1-bin-hadoop3.2/jars/spark-unsafe_2.12-3.2.1.jar) to constructor java.nio.DirectByteBuffer(long,int)
-WARNING: Please consider reporting this to the maintainers of org.apache.spark.unsafe.Platform
-WARNING: Use --illegal-access=warn to enable warnings of further illegal reflective access operations
-WARNING: All illegal access operations will be denied in a future release
-Using Spark's default log4j profile: org/apache/spark/log4j-defaults.properties
-Setting default log level to "WARN".
-To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).
-22/11/29 15:58:22 WARN NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
-[Stage 0:==========>                                          (224 + 16) / 1144][Stage 0:===================>                                 (424 + 13) / 1144][Stage 0:==============================>                      (656 + 12) / 1144][Stage 0:==========================================>          (913 + 22) / 1144]                                                                                [Stage 1:>                                                        (0 + 12) / 81][Stage 1:==>                                                      (4 + 12) / 81][Stage 1:====>                                                    (7 + 12) / 81][Stage 1:======>                                                  (9 + 12) / 81][Stage 1:======>                                                 (10 + 12) / 81][Stage 1:========>                                               (12 + 12) / 81][Stage 1:========>                                               (13 + 12) / 81][Stage 1:===========>                                            (17 + 12) / 81][Stage 1:================>                                       (24 + 12) / 81][Stage 1:=================>                                      (25 + 12) / 81][Stage 1:======================>                                 (32 + 12) / 81][Stage 1:=======================>                                (34 + 12) / 81][Stage 1:========================>                               (36 + 12) / 81][Stage 1:============================>                           (41 + 12) / 81][Stage 1:==============================>                         (44 + 12) / 81][Stage 1:===============================>                        (46 + 12) / 81][Stage 1:=================================>                      (48 + 12) / 81][Stage 1:======================================>                 (56 + 12) / 81][Stage 1:=======================================>                (57 + 12) / 81][Stage 1:========================================>               (58 + 12) / 81][Stage 1:========================================>               (59 + 12) / 81][Stage 1:=========================================>              (60 + 12) / 81][Stage 1:==========================================>             (62 + 12) / 81][Stage 1:===============================================>        (68 + 12) / 81][Stage 1:===============================================>        (69 + 12) / 81][Stage 1:================================================>       (70 + 11) / 81][Stage 1:==================================================>      (72 + 9) / 81][Stage 1:====================================================>    (74 + 7) / 81][Stage 1:====================================================>    (75 + 6) / 81][Stage 1:======================================================>  (78 + 3) / 81]                                                                                [Stage 2:>                                                        (0 + 12) / 81]ERROR:root:Exception while sending command.
-Traceback (most recent call last):
-  File "/koko/system/spark-3.2.1-bin-hadoop3.2/python/lib/py4j-0.10.9.3-src.zip/py4j/clientserver.py", line 480, in send_command
-    raise Py4JNetworkError("Answer from Java side is empty")
-py4j.protocol.Py4JNetworkError: Answer from Java side is empty
-
-During handling of the above exception, another exception occurred:
-
-Traceback (most recent call last):
-  File "/koko/system/spark-3.2.1-bin-hadoop3.2/python/lib/py4j-0.10.9.3-src.zip/py4j/java_gateway.py", line 1038, in send_command
-    response = connection.send_command(command)
-  File "/koko/system/spark-3.2.1-bin-hadoop3.2/python/lib/py4j-0.10.9.3-src.zip/py4j/clientserver.py", line 503, in send_command
-    raise Py4JNetworkError(
-py4j.protocol.Py4JNetworkError: Error while sending or receiving
-Traceback (most recent call last):
-  File "/common/home/ac1771/Desktop/cs543_proj/deep_learning/create_vectors.py", line 36, in <module>
-    processed_df.write.mode("Overwrite").json('/common/users/shared/cs543_fall22_group3/combined/deep_vectors')
-  File "/koko/system/spark-3.2.1-bin-hadoop3.2/python/pyspark/sql/readwriter.py", line 846, in json
-    self._jwrite.json(path)
-  File "/koko/system/spark-3.2.1-bin-hadoop3.2/python/lib/py4j-0.10.9.3-src.zip/py4j/java_gateway.py", line 1321, in __call__
-  File "/koko/system/spark-3.2.1-bin-hadoop3.2/python/pyspark/sql/utils.py", line 111, in deco
-    return f(*a, **kw)
-  File "/koko/system/spark-3.2.1-bin-hadoop3.2/python/lib/py4j-0.10.9.3-src.zip/py4j/protocol.py", line 334, in get_return_value
-py4j.protocol.Py4JError: An error occurred while calling o54.json
