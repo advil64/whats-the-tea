@@ -34,3 +34,5 @@ processed_df = df.withColumn("vector", vectorize_udf(F.col("selected_text")))
 
 # %%
 processed_df.write.mode("Overwrite").json('/common/users/shared/cs543_fall22_group3/combined/deep_vectors')
+
+#%%
