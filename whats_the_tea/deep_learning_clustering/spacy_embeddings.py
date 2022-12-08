@@ -136,25 +136,20 @@ class TextClassificationModel(nn.Module):
         
         self.embed_size = 1
         # Layers
-        self.conv = torch.nn.Conv1d(self.embed_size, self.conv_out_size, self.kernel_size, self.stride)
-        self.hidden_act = torch.relu
-        self.max_pool = torch.nn.MaxPool1d(self.kernel_size, self.stride)
+        self.conv1 = torch.nn.Conv1d(self.embed_size, self.conv_out_size, self.kernel_size, self.stride)
+        self.hidden_act1 = torch.relu
+        self.max_pool1 = torch.nn.MaxPool1d(self.kernel_size, self.stride)
+
+        self.conv2 = torch.nn.Conv1d(self.conv_out_size, self.conv_out_size, self.kernel_size, self.stride)
+        self.hidden_act2 = torch.relu
+        self.max_pool2 = torch.nn.MaxPool1d(self.kernel_size, self.stride)
        
         self.flatten = lambda x: x.view(x.shape[0], x.shape[1]*x.shape[2])
        
-        self.fc = torch.nn.Linear(self._linear_layer_in_size(), 42)
+        self.fc = torch.nn.Linear(18688, 42)
 
         if self.dropout_rate:
             self.dropout = torch.nn.Dropout(self.dropout_rate)
-
-    def _linear_layer_in_size(self):
-        out_conv_1 = ((self.embed_size - 1 * (self.kernel_size - 1) - 1) / self.stride) + 1
-        out_conv_1 = math.floor(out_conv_1)
-        out_pool_1 = ((out_conv_1 - 1 * (self.kernel_size - 1) - 1) / self.stride) + 1
-        out_pool_1 = math.floor(out_pool_1)
-                           
-        # return out_pool_1*self.conv_out_size
-        return 18944
 
     def forward(self, x):
         # print(x.shape)
@@ -164,14 +159,13 @@ class TextClassificationModel(nn.Module):
         x = torch.unsqueeze(x, 1)
         # x = torch.transpose(x, 1, 2) # (batch, 1, 300)
 
-        x = self.conv(x)
-        # print(x.shape)
+        x = self.conv1(x)
+        x = self.hidden_act1(x)
+        x = self.max_pool1(x)
 
-        x = self.hidden_act(x)
-        # print(x.shape)
-
-        x = self.max_pool(x)
-        # print(x.shape)
+        x = self.conv2(x)
+        x = self.hidden_act1(x)
+        x = self.max_pool1(x)
 
         if self.dropout_rate:
             x = self.dropout(x)
@@ -279,4 +273,4 @@ test_dataloader = DataLoader(test_dataset, batch_size=BATCH_SIZE,
 print(evaluate(test_dataloader))
 
 # %%
-torch.save(model.state_dict(), '/common/users/shared/cs543_fall22_group3/models/class_model.pt')
+# torch.save(model.state_dict(), '/common/users/shared/cs543_fall22_group3/models/class_model.pt')
