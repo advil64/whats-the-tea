@@ -7,3 +7,4 @@ spacy
 torch
 torchtext
 tweepy
+gunicorn
