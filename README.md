@@ -1,5 +1,5 @@
 # What's the Tea
-https://github.com/advil64/whats-the-tea/assets/16150834/dd3542aa-7794-498a-a6d2-eabff6808e34
+https://github.com/advil64/whats-the-tea/assets/16150834/bfbc475a-454d-461f-bdb6-98e2f4be964f
 
 ## Abstract
 We have implemented Topic Classification for news articles to classify different articles into multiple topics in real-time. We have used a deep learning network model to classify news articles into 42 categories. We trained our classification model to classify different news articles, and then applied this model to real-time Tweets from various authorized Twitter news handles to predict the topics at any given time. We also allow users to view the top ’N’ most popular Twitter topics at any given time and see their related Tweets as well.
