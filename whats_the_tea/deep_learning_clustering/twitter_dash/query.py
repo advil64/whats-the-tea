@@ -1,13 +1,12 @@
+from dotenv import load_dotenv
 import json
 import math
 import os
-
 import pandas as pd
 import spacy
 import torch
 import torch.nn as nn
 import tweepy
-from dotenv import load_dotenv
 
 """
 Prepping dependencies
@@ -18,35 +17,25 @@ nlp = spacy.load('en_core_web_lg')
 """
 Initialize PyTorch
 """
-
-if torch.cuda.is_available():
-    print('Good to go!')
-else:
-    print('Please set GPU via Edit -> Notebook Settings.')
-device = torch.device('cpu')
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+print(f"Using device: {device}")
 
 """
 Getting Twitter credentials from environment variables and instantiating a Tweepy instance
 """
-
 bearer_token = os.environ.get('bearer_token')
 consumer_key = os.environ.get('consumer_key')
 consumer_secret = os.environ.get('consumer_secret')
 access_token = os.environ.get('access_token')
 access_token_secret = os.environ.get('access_token_secret')
 
-client = tweepy.Client(
-    bearer_token=bearer_token,
-    consumer_key=consumer_key,
-    consumer_secret=consumer_secret,
-    access_token=access_token,
-    access_token_secret=access_token_secret,
-)
+auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
+auth.set_access_token(access_token, access_token_secret)
+client = tweepy.API(auth)
 
 """
 Load Twitter News accounts from JSON file
 """
-
 with open('accounts.json') as f:
     accounts = json.load(f)
 
@@ -74,8 +63,7 @@ def preprocess(text):
 
 
 class TextClassificationModel(nn.Module):
-
-    def __init__(self, num_class, embed_dim=300, vocab_size=45, pad_index=0,
+    def __init__(self, num_classes, embed_dim=300, vocab_size=45, pad_index=0,
                  stride=1, kernel_size=3, conv_out_size=64, dropout_rate=0.25):
         super(TextClassificationModel, self).__init__()
 
@@ -91,8 +79,8 @@ class TextClassificationModel(nn.Module):
 
         # Misc
         self.dropout_rate = dropout_rate
-
         self.embed_size = 1
+
         # Layers
         self.conv = torch.nn.Conv1d(self.embed_size, self.conv_out_size, self.kernel_size, self.stride)
         self.hidden_act = torch.relu
@@ -100,7 +88,7 @@ class TextClassificationModel(nn.Module):
 
         self.flatten = lambda x: x.view(x.shape[0], x.shape[1] * x.shape[2])
 
-        self.fc = torch.nn.Linear(self._linear_layer_in_size(), num_class)
+        self.fc = torch.nn.Linear(self._linear_layer_in_size(), num_classes)
 
         if self.dropout_rate:
             self.dropout = torch.nn.Dropout(self.dropout_rate)
@@ -111,41 +99,25 @@ class TextClassificationModel(nn.Module):
         out_pool_1 = ((out_conv_1 - 1 * (self.kernel_size - 1) - 1) / self.stride) + 1
         out_pool_1 = math.floor(out_pool_1)
 
-        # return out_pool_1*self.conv_out_size
-        return 18944
+        return 18944  # out_pool_1 * self.conv_out_size
 
     def forward(self, x):
-        # print(x.shape)
-
-        # x = torch.reshape(x. (x.shape[0],)
-
         x = torch.unsqueeze(x, 1)
-        # x = torch.transpose(x, 1, 2) # (batch, 1, 300)
-
         x = self.conv(x)
-        # print(x.shape)
-
         x = self.hidden_act(x)
-        # print(x.shape)
-
         x = self.max_pool(x)
-        # print(x.shape)
-
         x = self.flatten(x)
-        # print(x.shape)
 
         if self.dropout_rate:
             x = self.dropout(x)
 
         x = self.fc(x)
-
         return x
 
 
-# %%
-m = TextClassificationModel(42)
-m.load_state_dict(torch.load('class_model.pt', map_location=device))
-m.to(torch.device(device))
+model = TextClassificationModel(num_classes=42)
+model.load_state_dict(torch.load('class_model.pt', map_location=device))
+model.to(torch.device(device))
 
 """
 Embed Tweets
@@ -162,19 +134,17 @@ def get_embeddings(tweets):
 
 
 def make_dataframe(tweets, embeddings):
-    df = pd.DataFrame([tweets, embeddings]).T
-    df.columns = ['text', 'vector']
-    return df
+    return pd.DataFrame({'text': tweets, 'vector': embeddings})
 
 
 def predict(dataloader):
-    m.eval()
+    model.eval()
     pred = []
 
     with torch.no_grad():
         for idx, vector in enumerate(dataloader):
-            predicted_label = m(vector)
-            pred = pred + list(predicted_label.argmax(1).cpu().detach().numpy())
+            predicted_label = model(vector)
+            pred.extend(predicted_label.argmax(1).cpu().detach().numpy())
 
     return pred
 
@@ -288,15 +258,10 @@ def get_top_categories(df, n):
     }
 
     df['label'] = df['label'].apply(lambda x: label_mapping[x])
-    df = df.groupby('label')['label'].count()
-    df = df.reset_index(name='count')
-    df = df.sort_values(['count'], ascending=False)
+    df = df.groupby('label')['label'].count().reset_index(name='count').sort_values(['count'], ascending=False)
     df = df.head(int(n))
 
-    categories = []
-    counts = []
-    for category, count in df.values.tolist():
-        categories.append(category)
-        counts.append(count)
+    categories = df['label'].values.tolist()
+    counts = df['count'].values.tolist()
 
     return categories, counts

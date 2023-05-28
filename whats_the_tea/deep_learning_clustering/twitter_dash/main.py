@@ -20,15 +20,6 @@ api = Api(
 
 app.register_blueprint(blueprint)
 
-# GET_TWEETS = api.model('UserInfo', {
-#     'username': fields.String(),
-#     'profile_url': fields.String(),
-#     'bio': fields.String(),
-#     'date_created': fields.DateTime(dt_format='iso8601'),
-#     'display_name': fields.String(),
-#     'vectors': fields.List(fields.String()),
-#     'scores': fields.List(fields.Float())})
-
 GET_TWEETS = api.model('TweetInfo', {
     'tweets': fields.List(fields.String())
 })
