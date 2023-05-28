@@ -18,7 +18,7 @@ nlp = spacy.load('en_core_web_lg')
 Initialize PyTorch
 """
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-print(f"Using device: {device}")
+print(f'Using device: {device}')
 
 """
 Getting Twitter credentials from environment variables and instantiating a Tweepy instance
@@ -63,12 +63,12 @@ def preprocess(text):
 
 
 class TextClassificationModel(nn.Module):
-    def __init__(self, num_classes, embed_dim=300, vocab_size=45, pad_index=0,
+    def __init__(self, num_classes=42, embed_dim=1, vocab_size=45, pad_index=0,
                  stride=1, kernel_size=3, conv_out_size=64, dropout_rate=0.25):
         super(TextClassificationModel, self).__init__()
 
         # Embedding layer parameters
-        self.embed_size = embed_dim
+        self.embed_dim = embed_dim
         self.vocab_size = vocab_size
         self.pad_index = pad_index
 
@@ -79,22 +79,21 @@ class TextClassificationModel(nn.Module):
 
         # Misc
         self.dropout_rate = dropout_rate
-        self.embed_size = 1
 
         # Layers
-        self.conv = torch.nn.Conv1d(self.embed_size, self.conv_out_size, self.kernel_size, self.stride)
+        self.conv = torch.nn.Conv1d(self.embed_dim, self.conv_out_size, self.kernel_size, self.stride)
         self.hidden_act = torch.relu
         self.max_pool = torch.nn.MaxPool1d(self.kernel_size, self.stride)
 
         self.flatten = lambda x: x.view(x.shape[0], x.shape[1] * x.shape[2])
 
-        self.fc = torch.nn.Linear(self._linear_layer_in_size(), num_classes)
+        self.fc = torch.nn.Linear(self._linear_layer_in_size(), self.num_classes)
 
         if self.dropout_rate:
             self.dropout = torch.nn.Dropout(self.dropout_rate)
 
     def _linear_layer_in_size(self):
-        out_conv_1 = ((self.embed_size - 1 * (self.kernel_size - 1) - 1) / self.stride) + 1
+        out_conv_1 = ((self.embed_dim - 1 * (self.kernel_size - 1) - 1) / self.stride) + 1
         out_conv_1 = math.floor(out_conv_1)
         out_pool_1 = ((out_conv_1 - 1 * (self.kernel_size - 1) - 1) / self.stride) + 1
         out_pool_1 = math.floor(out_pool_1)
@@ -115,7 +114,7 @@ class TextClassificationModel(nn.Module):
         return x
 
 
-model = TextClassificationModel(num_classes=42)
+model = TextClassificationModel()
 model.load_state_dict(torch.load('class_model.pt', map_location=device))
 model.to(torch.device(device))
 

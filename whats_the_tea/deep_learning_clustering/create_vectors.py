@@ -1,38 +1,27 @@
-# %%
-import findspark
-findspark.init()
-
-from pyspark.ml.feature import Word2Vec
-from pyspark import SparkConf, SparkContext
-from pyspark.sql import SQLContext
-
-from pyspark import SparkContext
-from pyspark.streaming import StreamingContext #Import streaming context
 from pyspark.sql import SparkSession
-
-import spacy
 from pyspark.sql import functions as F
+import spacy
+import findspark
 
-# %%
 nlp = spacy.load('en_core_web_lg')
 
-# %%
+# Initialize Spark
+findspark.init()
 spark = SparkSession.builder\
     .master('local[*]')\
     .appName('explore')\
+    .config('spark.driver.maxResultSize', '8g') \
     .getOrCreate()
-sc = spark.sparkContext._conf.setAll([('spark.driver.maxResultSize', '8g')])
 
-# %%
+# Read JSON data into DataFrame
 df = spark.read.json('/common/users/shared/cs543_fall22_group3/combined/combined_raw')
 
+@F.udf
 def vectorize(text):
     return nlp(str(text)).vector
 
-vectorize_udf = F.udf(lambda z: vectorize(z))
-processed_df = df.withColumn("vector", vectorize_udf(F.col("selected_text")))
+# Process DataFrame and add vector column
+processed_df = df.withColumn('vector', vectorize(F.col('selected_text')))
 
-# %%
-processed_df.write.mode("Overwrite").json('/common/users/shared/cs543_fall22_group3/combined/deep_vectors')
-
-#%%
+# Write processed DataFrame to JSON
+processed_df.write.mode('Overwrite').json('/common/users/shared/cs543_fall22_group3/combined/deep_vectors')

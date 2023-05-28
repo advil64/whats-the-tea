@@ -37,7 +37,9 @@ with open(tokens_output_path) as file:
     for line in file:
         if count > 1000:
             break
+
         count += 1
+
         print(f'Finished calculating {count} vectors')
 
         tokens = line.strip().split(',')
