@@ -1,33 +1,26 @@
-from dotenv import load_dotenv
 from torch.utils.data import DataLoader
 from torchtext.data.functional import to_map_style_dataset
+from .config import Config
+from .model import load_model
 import json
-import math
-import os
 import pandas as pd
 import spacy
 import torch
-import torch.nn as nn
 import tweepy
 
-load_dotenv()
 nlp = spacy.load('en_core_web_lg')
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 print(f'Using device: {device}')
 
-bearer_token = os.environ.get('bearer_token')
-consumer_key = os.environ.get('consumer_key')
-consumer_secret = os.environ.get('consumer_secret')
-access_token = os.environ.get('access_token')
-access_token_secret = os.environ.get('access_token_secret')
+config = Config()
 
 client = tweepy.Client(
-    bearer_token=bearer_token,
-    consumer_key=consumer_key,
-    consumer_secret=consumer_secret,
-    access_token=access_token,
-    access_token_secret=access_token_secret,
+    bearer_token=config.BEARER_TOKEN,
+    consumer_key=config.CONSUMER_KEY,
+    consumer_secret=config.CONSUMER_SECRET,
+    access_token=config.ACCESS_TOKEN,
+    access_token_secret=config.ACCESS_TOKEN_SECRET,
 )
 
 with open('accounts.json') as f:
@@ -61,62 +54,7 @@ def preprocess(text):
     return nlp(text).vector
 
 
-class TextClassificationModel(nn.Module):
-    def __init__(self, num_classes=42, embed_dim=1, vocab_size=45, pad_index=0,
-                 stride=1, kernel_size=3, conv_out_size=64, dropout_rate=0.25):
-        super(TextClassificationModel, self).__init__()
-
-        # Embedding layer parameters
-        self.num_classes = num_classes
-        self.embed_dim = embed_dim
-        self.vocab_size = vocab_size
-        self.pad_index = pad_index
-
-        # Conv layer parameters
-        self.stride = stride
-        self.kernel_size = kernel_size
-        self.conv_out_size = conv_out_size
-
-        # Misc
-        self.dropout_rate = dropout_rate
-
-        # Layers
-        self.conv = torch.nn.Conv1d(self.embed_dim, self.conv_out_size, self.kernel_size, self.stride)
-        self.hidden_act = torch.relu
-        self.max_pool = torch.nn.MaxPool1d(self.kernel_size, self.stride)
-
-        self.flatten = lambda x: x.view(x.shape[0], x.shape[1] * x.shape[2])
-
-        self.fc = torch.nn.Linear(self._linear_layer_in_size(), self.num_classes)
-
-        if self.dropout_rate:
-            self.dropout = torch.nn.Dropout(self.dropout_rate)
-
-    def _linear_layer_in_size(self):
-        out_conv_1 = ((self.embed_dim - 1 * (self.kernel_size - 1) - 1) / self.stride) + 1
-        out_conv_1 = math.floor(out_conv_1)
-        out_pool_1 = ((out_conv_1 - 1 * (self.kernel_size - 1) - 1) / self.stride) + 1
-        out_pool_1 = math.floor(out_pool_1)
-
-        return 18944  # out_pool_1 * self.conv_out_size
-
-    def forward(self, x):
-        x = torch.unsqueeze(x, 1)
-        x = self.conv(x)
-        x = self.hidden_act(x)
-        x = self.max_pool(x)
-        x = self.flatten(x)
-
-        if self.dropout_rate:
-            x = self.dropout(x)
-
-        x = self.fc(x)
-        return x
-
-
-model = TextClassificationModel()
-model.load_state_dict(torch.load('class_model.pt', map_location=device))
-model.to(torch.device(device))
+model = load_model('class_model.pt')
 
 
 def predict(dataloader):

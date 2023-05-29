@@ -4,7 +4,6 @@ from torch.utils.data import Dataset, DataLoader
 from torch.utils.data.dataset import random_split
 from torchtext.data.functional import to_map_style_dataset
 from tqdm.auto import tqdm
-import math
 import numpy as np
 import pandas as pd
 import time
@@ -83,51 +82,45 @@ dataloader = DataLoader(train_iter, batch_size=8, shuffle=False, collate_fn=coll
 
 
 class TextClassificationModel(nn.Module):
-    def __init__(self, num_classes=42, embed_dim=1, vocab_size=45, pad_index=0,
-                 stride=1, kernel_size=3, conv_out_size=64, dropout_rate=0.25):
+    def __init__(self, embed_dim=1, out_channels=64, kernel_size=3, stride=1, padding=0, p=0.25, num_classes=42):
         super(TextClassificationModel, self).__init__()
-
         # Embedding layer parameters
         self.num_classes = num_classes
         self.embed_size = embed_dim
-        self.vocab_size = vocab_size
-        self.pad_index = pad_index
+        self.padding = padding
 
         # Conv layer parameters
         self.stride = stride
         self.kernel_size = kernel_size
-        self.conv_out_size = conv_out_size
+        self.out_channels = out_channels
 
-        # Misc
-        self.dropout_rate = dropout_rate
+        # Dropout layer parameters
+        self.p = p
 
         # Layers
-        self.conv = torch.nn.Conv1d(self.embed_size, self.conv_out_size, self.kernel_size, self.stride)
-        self.hidden_act = torch.relu
-        self.max_pool = torch.nn.MaxPool1d(self.kernel_size, self.stride)
-        self.flatten = lambda x: x.view(x.shape[0], x.shape[1] * x.shape[2])
-        self.fc = torch.nn.Linear(self._linear_layer_in_size(), self.num_classes)
+        self.conv = nn.Conv1d(self.embed_size, self.out_channels, self.kernel_size, self.stride, self.padding)
+        self.relu = nn.ReLU()
+        self.max_pool = nn.MaxPool1d(self.kernel_size, self.stride)
+        self.fc = nn.Linear(self._linear_layer_in_size(), self.num_classes)
 
-        if self.dropout_rate:
-            self.dropout = torch.nn.Dropout(self.dropout_rate)
+        if self.p:
+            self.dropout = nn.Dropout(self.p)
 
     def _linear_layer_in_size(self):
-        out_conv_1 = ((self.embed_size - 1 * (self.kernel_size - 1) - 1) / self.stride) + 1
-        out_conv_1 = math.floor(out_conv_1)
-        out_pool_1 = ((out_conv_1 - 1 * (self.kernel_size - 1) - 1) / self.stride) + 1
-        out_pool_1 = math.floor(out_pool_1)
+        conv_out_dim = (self.embed_dim - self.kernel_size + 1) // self.stride
+        pool_out_dim = (conv_out_dim - self.kernel_size + 1) // self.stride
 
-        return 18944  # out_pool_1 * self.conv_out_size
+        return 18944  # pool_out_dim * self.out_channels
 
     def forward(self, x):
-        x = torch.unsqueeze(x, 1)
+        x = x.unsqueeze(1)
         x = self.conv(x)
-        x = self.hidden_act(x)
+        x = self.relu(x)
         x = self.max_pool(x)
-        x = self.flatten(x)
+        x = x.flatten(start_dim=1)
         x = self.fc(x)
 
-        if self.dropout_rate:
+        if self.p:
             x = self.dropout(x)
 
         return x
@@ -144,7 +137,7 @@ def train(dataloader, criterion, optimizer, epoch):
         predicted_label = model(vector)
         loss = criterion(predicted_label, label)
         loss.backward()
-        torch.nn.utils.clip_grad_norm_(model.parameters(), 0.1)
+        nn.utils.clip_grad_norm_(model.parameters(), 0.1)
         optimizer.step()
         total_acc += (predicted_label.argmax(1) == label).sum().item()
         total_count += label.size(0)
@@ -180,7 +173,7 @@ BATCH_SIZE = 64  # batch size for training
 num_classes = len(set([label for (label, text) in train_iter]))
 
 model = TextClassificationModel(num_classes).to(device)
-criterion = torch.nn.CrossEntropyLoss()
+criterion = nn.CrossEntropyLoss()
 optimizer = torch.optim.SGD(model.parameters(), lr=LR)
 scheduler = torch.optim.lr_scheduler.StepLR(optimizer, 1.0, gamma=0.1)
 total_accu = None
