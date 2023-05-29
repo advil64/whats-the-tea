@@ -6,16 +6,10 @@ from sentence_transformers import SentenceTransformer, util
 from time import time
 from tqdm import tqdm
 
-LABELS = [
-    'arts', 'arts & culture', 'black voices', 'business', 'college',
-    'comedy', 'crime', 'culture & arts', 'divorce', 'education', 'entertainment',
-    'environment', 'fifty', 'food & drink', 'good news', 'green',
-    'healthy living', 'home & living', 'impact', 'latino voices',
-    'media', 'money', 'parenting', 'parents', 'politics', 'queer voices',
-    'religion', 'science', 'sports', 'style', 'style & beauty', 'taste',
-    'tech', 'the worldpost', 'travel', 'u.s. news', 'weddings', 'weird news',
-    'wellness', 'women', 'world news', 'worldpost'
-]
+with open('labels.json') as f:
+    labels = json.load(f)
+
+labels = [label.lower() for label in labels]
 
 PREFIX = pathlib.Path('/common/users/shared/cs543_fall22_group3/combined/combined_raw')
 
@@ -44,7 +38,7 @@ query_embedding = model.encode(queries, convert_to_tensor=True)
 cos_sims = util.cos_sim(query_embedding, choices)
 max_idxs = torch.argmax(cos_sims, dim=1)
 
-assigned_labels = [LABELS[x] for x in max_idxs]
+assigned_labels = [labels[x] for x in max_idxs]
 
 with open(outfile, 'w') as f:
     json.dump([{'query': q, 'label': l} for q, l in zip(queries, assigned_labels)], f)

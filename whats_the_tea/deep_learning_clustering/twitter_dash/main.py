@@ -45,7 +45,7 @@ class TweetsResource(Resource):
     @api.marshal_with(tweets_model, mask=None)
     def get(self):
         topic = request.args.get('Topic')
-        filtered_tweets = filter_tweets(topic)
+        filtered_tweets = filter_tweets(topic.upper())
 
         return {'tweets': filtered_tweets}
 
