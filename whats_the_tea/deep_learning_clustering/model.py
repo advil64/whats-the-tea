@@ -2,9 +2,9 @@ import torch
 import torch.nn as nn
 
 
-class TextClassificationModel(nn.Module):
+class TweetClassifier(nn.Module):
     def __init__(self, embed_dim=300, out_channels=64, kernel_size=3, stride=1, padding=0, p=0.25, num_classes=42):
-        super(TextClassificationModel, self).__init__()
+        super(TweetClassifier, self).__init__()
         self.embed_dim = embed_dim
         self.out_channels = out_channels
         self.kernel_size = kernel_size
@@ -40,7 +40,7 @@ class TextClassificationModel(nn.Module):
 def load_model(model_path):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-    model = TextClassificationModel().to(device)
+    model = TweetClassifier().to(device)
     model.load_state_dict(torch.load(model_path, map_location=device))
 
     return model

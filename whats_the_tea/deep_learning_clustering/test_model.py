@@ -1,4 +1,4 @@
-from model import TextClassificationModel
+from model import TweetClassifier
 from sklearn.metrics import confusion_matrix
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
@@ -105,7 +105,7 @@ def evaluate(dataloader, model, criterion):
 
 num_classes = len(set([label for (label, text) in train_iter]))
 
-model = TextClassificationModel().to(device)
+model = TweetClassifier().to(device)
 criterion = nn.CrossEntropyLoss()
 train_iter = huffPo.get_train()
 test_iter = huffPo.get_test()

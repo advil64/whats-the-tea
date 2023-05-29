@@ -1,4 +1,4 @@
-from model import TextClassificationModel
+from model import TweetClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 from torch.utils.data import Dataset, DataLoader
@@ -126,7 +126,7 @@ EPOCHS = 20  # epoch
 LR = 0.1  # learning rate
 BATCH_SIZE = 64  # batch size for training
 
-model = TextClassificationModel().to(device)
+model = TweetClassifier().to(device)
 criterion = nn.CrossEntropyLoss()
 optimizer = torch.optim.SGD(model.parameters(), lr=LR)
 scheduler = torch.optim.lr_scheduler.StepLR(optimizer, 1.0, gamma=0.1)
