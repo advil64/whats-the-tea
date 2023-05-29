@@ -26,7 +26,6 @@ class TweetClassifier(nn.Module):
         return pool_out_dim * self.out_channels
 
     def forward(self, x):
-        x = x.unsqueeze(1)
         x = self.conv(x)
         x = self.relu(x)
         x = self.max_pool(x)
