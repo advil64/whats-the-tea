@@ -27,7 +27,7 @@ with open('../../accounts.json') as f:
 
 
 def process_tweets():
-    tweets = get_tweets(n=10, batch_size=64)
+    tweets = get_tweets(n=10)
     tokenized_tweets = [nlp(tweet).vector for tweet in tweets]
     df = pd.DataFrame({'text': tweets, 'vector': tokenized_tweets})
 
@@ -40,13 +40,13 @@ def process_tweets():
     return df
 
 
-def get_tweets(n, batch_size):
+def get_tweets(n):
     tweets = []
     for account in accounts:
         response = client.get_users_tweets(account['id'], max_results=n)
         tweets.extend([tweet.text for tweet in response.data])
 
-    return tweets[: (len(tweets) // batch_size) * batch_size]
+    return tweets
 
 
 model = load_model('class_model.pt')
