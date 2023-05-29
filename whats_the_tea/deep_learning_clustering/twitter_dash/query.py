@@ -1,7 +1,7 @@
 from torch.utils.data import DataLoader
 from torchtext.data.functional import to_map_style_dataset
 from .config import Config
-from .model import load_model
+from ..model import load_model
 import json
 import pandas as pd
 import spacy
