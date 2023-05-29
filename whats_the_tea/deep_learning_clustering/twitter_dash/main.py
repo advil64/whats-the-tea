@@ -49,9 +49,8 @@ class GetTweets(Resource):
     )
     @api.marshal_with(GET_TWEETS, mask=None)
     def get(self):
-        df = process_tweets()
         topic = request.args.get('Topic')
-        filtered_tweets = filter_tweets(df, topic)
+        filtered_tweets = filter_tweets(topic)
 
         return {'tweets': filtered_tweets}
 
@@ -69,9 +68,8 @@ class GetCategories(Resource):
     )
     @api.marshal_with(GET_CATEGORIES, mask=None)
     def get(self):
-        df = process_tweets()
         n = request.args.get('n')
-        categories, counts = get_top_categories(df, n)
+        categories, counts = get_top_categories(n)
 
         return {
             'categories': categories,
