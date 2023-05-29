@@ -17,27 +17,22 @@ api = Api(
 
 app.register_blueprint(blueprint)
 
-GET_TWEETS = api.model('TweetInfo', {
+tweets_model = api.model('TweetInfo', {
     'tweets': fields.List(fields.String())
 })
 
-GET_CATEGORIES = api.model('TweetInfo', {
+categories_model = api.model('CategoryInfo', {
     'categories': fields.List(fields.String()),
     'counts': fields.List(fields.Integer())
 })
 
 # Documentation for Swagger UI
-ns_tweets = api.namespace(
-    'tweets', description='Gets the Tweets from news-related accounts'
-)
-
-ns_categories = api.namespace(
-    'categories', description='Gets the top n categories from the fetched Tweets'
-)
+ns_tweets = api.namespace('tweets', description='Gets the Tweets from news-related accounts')
+ns_categories = api.namespace('categories', description='Gets the top n categories from the fetched Tweets')
 
 
 @ns_tweets.route('')
-class GetTweets(Resource):
+class TweetsResource(Resource):
     '''
     Returns Tweets from news-related accounts
     '''
@@ -47,7 +42,7 @@ class GetTweets(Resource):
         description='The news topic you would like to get the Tweets for.',
         type='string',
     )
-    @api.marshal_with(GET_TWEETS, mask=None)
+    @api.marshal_with(tweets_model, mask=None)
     def get(self):
         topic = request.args.get('Topic')
         filtered_tweets = filter_tweets(topic)
@@ -56,7 +51,7 @@ class GetTweets(Resource):
 
 
 @ns_categories.route('')
-class GetCategories(Resource):
+class CategoriesResource(Resource):
     '''
     Returns the Top n Categories from the fetched Tweets
     '''
@@ -66,7 +61,7 @@ class GetCategories(Resource):
         description='The number of top categories to return',
         type='int',
     )
-    @api.marshal_with(GET_CATEGORIES, mask=None)
+    @api.marshal_with(categories_model, mask=None)
     def get(self):
         n = request.args.get('n')
         categories, counts = get_top_categories(n)

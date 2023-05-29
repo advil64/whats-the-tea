@@ -121,14 +121,14 @@ model.to(torch.device(device))
 
 def predict(dataloader):
     model.eval()
-    pred = []
+    preds = []
 
     with torch.no_grad():
         for idx, vector in enumerate(dataloader):
             predicted_label = model(vector)
-            pred.extend(predicted_label.argmax(1).cpu().detach().numpy())
+            preds.extend(predicted_label.argmax(1).cpu().detach().numpy())
 
-    return pred
+    return preds
 
 
 def collate_batch(batch):
@@ -192,53 +192,10 @@ def filter_tweets(topic):
 
 
 def get_top_categories(n):
-    label_mapping = {
-        0: 'ARTS',
-        1: 'ARTS & CULTURE',
-        2: 'BLACK VOICES',
-        3: 'BUSINESS',
-        4: 'COLLEGE',
-        5: 'COMEDY',
-        6: 'CRIME',
-        7: 'CULTURE & ARTS',
-        8: 'DIVORCE',
-        9: 'EDUCATION',
-        10: 'ENTERTAINMENT',
-        11: 'ENVIRONMENT',
-        12: 'FIFTY',
-        13: 'FOOD & DRINK',
-        14: 'GOOD NEWS',
-        15: 'GREEN',
-        16: 'HEALTHY LIVING',
-        17: 'HOME & LIVING',
-        18: 'IMPACT',
-        19: 'LATINO VOICES',
-        20: 'MEDIA',
-        21: 'MONEY',
-        22: 'PARENTING',
-        23: 'PARENTS',
-        24: 'POLITICS',
-        25: 'QUEER VOICES',
-        26: 'RELIGION',
-        27: 'SCIENCE',
-        28: 'SPORTS',
-        29: 'STYLE',
-        30: 'STYLE & BEAUTY',
-        31: 'TASTE',
-        32: 'TECH',
-        33: 'THE WORLDPOST',
-        34: 'TRAVEL',
-        35: 'U.S. NEWS',
-        36: 'WEDDINGS',
-        37: 'WEIRD NEWS',
-        38: 'WELLNESS',
-        39: 'WOMEN',
-        40: 'WORLD NEWS',
-        41: 'WORLDPOST'
-    }
+    inverted_label_mapping = {v: k for k, v in label_mapping.items()}
 
     df = process_tweets()
-    df['label'] = df['label'].apply(lambda x: label_mapping[x])
+    df['label'] = df['label'].apply(lambda x: inverted_label_mapping[x])
     df = df.groupby('label')['label'].count().reset_index(name='count').sort_values(['count'], ascending=False)
     df = df.head(int(n))
 
