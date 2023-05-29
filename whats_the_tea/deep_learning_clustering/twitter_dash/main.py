@@ -29,7 +29,7 @@ GET_CATEGORIES = api.model('TweetInfo', {
     'counts': fields.List(fields.Integer())
 })
 
-# documentation for swagger UI
+# Documentation for Swagger UI
 ns_tweets = api.namespace(
     'tweets', description='Gets the Tweets from news-related accounts'
 )
@@ -42,7 +42,7 @@ ns_categories = api.namespace(
 @ns_tweets.route('')
 class GetUserAnalytics(Resource):
     '''
-    Returns Tweets from news related accounts
+    Returns Tweets from news-related accounts
     '''
 
     @api.param(

@@ -4,9 +4,9 @@ from torch.utils.data import Dataset, DataLoader
 from torch.utils.data.dataset import random_split
 from torchtext.data.functional import to_map_style_dataset
 from tqdm.auto import tqdm
-import pandas as pd
 import math
 import numpy as np
+import pandas as pd
 import time
 import torch
 import torch.nn as nn
@@ -199,6 +199,7 @@ for epoch in range(1, EPOCHS + 1):
     epoch_start_time = time.time()
     train(train_dataloader, criterion, optimizer, epoch)
     accu_val = evaluate(valid_dataloader, model, criterion)
+
     if total_accu is not None and total_accu > accu_val:
         scheduler.step()
     else:

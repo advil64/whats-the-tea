@@ -29,12 +29,16 @@ consumer_secret = os.environ.get('consumer_secret')
 access_token = os.environ.get('access_token')
 access_token_secret = os.environ.get('access_token_secret')
 
-auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
-auth.set_access_token(access_token, access_token_secret)
-client = tweepy.API(auth)
+client = tweepy.Client(
+    bearer_token=bearer_token,
+    consumer_key=consumer_key,
+    consumer_secret=consumer_secret,
+    access_token=access_token,
+    access_token_secret=access_token_secret,
+)
 
 """
-Load Twitter News accounts from JSON file
+Load Twitter news-related accounts from JSON file
 """
 with open('accounts.json') as f:
     accounts = json.load(f)
@@ -68,6 +72,7 @@ class TextClassificationModel(nn.Module):
         super(TextClassificationModel, self).__init__()
 
         # Embedding layer parameters
+        self.num_classes = num_classes
         self.embed_dim = embed_dim
         self.vocab_size = vocab_size
         self.pad_index = pad_index

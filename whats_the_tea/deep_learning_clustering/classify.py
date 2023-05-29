@@ -1,10 +1,10 @@
+import argparse
 import json
 import torch
 import pathlib
-import argparse
+from sentence_transformers import SentenceTransformer, util
 from time import time
 from tqdm import tqdm
-from sentence_transformers import SentenceTransformer, util
 
 LABELS = [
     'arts', 'arts & culture', 'black voices', 'business', 'college',

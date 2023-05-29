@@ -4,11 +4,10 @@ from sklearn.preprocessing import LabelEncoder
 from torch.utils.data import Dataset, DataLoader
 from torchtext.data.functional import to_map_style_dataset
 from tqdm.auto import tqdm
-import pandas as pd
-import plotly.express as px
 import math
 import numpy as np
-import time
+import pandas as pd
+import plotly.express as px
 import torch
 import torch.nn as nn
 
@@ -120,7 +119,7 @@ class TextClassificationModel(nn.Module):
         out_pool_1 = ((out_conv_1 - 1 * (self.kernel_size - 1) - 1) / self.stride) + 1
         out_pool_1 = math.floor(out_pool_1)
 
-        return 18944  # out_pool_1*self.conv_out_size
+        return 18944  # out_pool_1 * self.conv_out_size
 
     def forward(self, x):
         x = torch.unsqueeze(x, 1)
@@ -136,42 +135,23 @@ class TextClassificationModel(nn.Module):
         return x
 
 
-def train(dataloader, model, criterion, optimizer, epoch):
-    model.train()
-    total_acc, total_count = 0, 0
-    log_interval = 500
-    start_time = time.time()
-
-    for idx, (label, vector) in enumerate(dataloader):
-        optimizer.zero_grad()
-        predicted_label = model(vector)
-        loss = criterion(predicted_label, label)
-        loss.backward()
-        torch.nn.utils.clip_grad_norm_(model.parameters(), 0.1)
-        optimizer.step()
-        total_acc += (predicted_label.argmax(1) == label).sum().item()
-        total_count += label.size(0)
-
-        if idx % log_interval == 0 and idx > 0:
-            elapsed = time.time() - start_time
-            print(
-                f"| epoch {epoch:3d} | {idx:5d}/{len(dataloader):5d} batches | accuracy {total_acc / total_count:8.3f}")
-            total_acc, total_count = 0, 0
-            start_time = time.time()
-
-
 def evaluate(dataloader, model, criterion):
     model.eval()
     total_acc, total_count = 0, 0
+    acc, pred = [], []
 
     with torch.no_grad():
         for idx, (label, vector) in enumerate(dataloader):
-            print(label, vector)
             predicted_label = model(vector)
             loss = criterion(predicted_label, label)
+
+            acc.extend(label.cpu().detach().numpy())
+            pred.extend(predicted_label.argmax(1).cpu().detach().numpy())
+
             total_acc += (predicted_label.argmax(1) == label).sum().item()
             total_count += label.size(0)
-    return total_acc / total_count
+
+    return acc, pred
 
 
 num_classes = len(set([label for (label, text) in train_iter]))
@@ -184,14 +164,7 @@ test_dataset = to_map_style_dataset(test_iter)
 
 test_dataloader = DataLoader(test_dataset, batch_size=64, shuffle=True, collate_fn=collate_batch)
 
-acc = evaluate(test_dataloader, model, criterion)
-pred = []
-
-model.train()
-with torch.no_grad():
-    for (label, vector) in tqdm(test_dataloader, desc="Predicting"):
-        predicted_label = model(vector)
-        pred.extend(predicted_label.argmax(1).tolist())
+acc, pred = evaluate(test_dataloader, model, criterion)
 
 acc_labels = list(map(lambda x: category_mapping[x], acc))
 pred_labels = list(map(lambda x: category_mapping[x], pred))
