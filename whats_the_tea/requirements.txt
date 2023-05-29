@@ -1,0 +1,12 @@
+flask
+flask-cors
+flask-restx
+nltk
+pandas
+python-dotenv
+sentence-transformers
+spacy
+torch
+torchtext
+tqdm
+tweepy
