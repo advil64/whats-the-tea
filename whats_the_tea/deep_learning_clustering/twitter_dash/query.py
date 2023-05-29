@@ -11,7 +11,6 @@ import tweepy
 nlp = spacy.load('en_core_web_lg')
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-print(f'Using device: {device}')
 
 config = Config()
 
@@ -29,8 +28,8 @@ with open('../../accounts.json') as f:
 
 def process_tweets():
     tweets = get_tweets(n=10, batch_size=64)
-    embeddings = [preprocess(tweet) for tweet in tweets]
-    df = pd.DataFrame({'text': tweets, 'vector': embeddings})
+    tokenized_tweets = [nlp(tweet).vector for tweet in tweets]
+    df = pd.DataFrame({'text': tweets, 'vector': tokenized_tweets})
 
     classify_dataset = to_map_style_dataset(df['vector'])
     test_dataloader = DataLoader(classify_dataset, batch_size=64, shuffle=True, collate_fn=collate_batch)
@@ -48,10 +47,6 @@ def get_tweets(n, batch_size):
         tweets.extend([tweet.text for tweet in response.data])
 
     return tweets[: (len(tweets) // batch_size) * batch_size]
-
-
-def preprocess(text):
-    return nlp(text).vector
 
 
 model = load_model('class_model.pt')
