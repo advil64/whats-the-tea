@@ -1,9 +1,6 @@
 from flask import Flask, request, Blueprint
 from flask_cors import CORS
 from flask_restx import Resource, Api, fields
-from torch.utils.data import DataLoader
-from torchtext.data.functional import to_map_style_dataset
-
 from .query import *
 
 app = Flask(__name__)
@@ -40,7 +37,7 @@ ns_categories = api.namespace(
 
 
 @ns_tweets.route('')
-class GetUserAnalytics(Resource):
+class GetTweets(Resource):
     '''
     Returns Tweets from news-related accounts
     '''
@@ -52,16 +49,7 @@ class GetUserAnalytics(Resource):
     )
     @api.marshal_with(GET_TWEETS, mask=None)
     def get(self):
-        tweets = get_tweets(n=10, batch_size=64)
-        embeddings = get_embeddings(tweets)
-        df = make_dataframe(tweets, embeddings)
-
-        classify_dataset = to_map_style_dataset(df['vector'])
-        test_dataloader = DataLoader(classify_dataset, batch_size=64, shuffle=True, collate_fn=collate_batch)
-
-        predictions = predict(test_dataloader)
-        df['label'] = predictions
-
+        df = process_tweets()
         topic = request.args.get('Topic')
         filtered_tweets = filter_tweets(df, topic)
 
@@ -81,16 +69,7 @@ class GetCategories(Resource):
     )
     @api.marshal_with(GET_CATEGORIES, mask=None)
     def get(self):
-        tweets = get_tweets(n=10, batch_size=64)
-        embeddings = get_embeddings(tweets)
-        df = make_dataframe(tweets, embeddings)
-
-        classify_dataset = to_map_style_dataset(df['vector'])
-        test_dataloader = DataLoader(classify_dataset, batch_size=64, shuffle=True, collate_fn=collate_batch)
-
-        predictions = predict(test_dataloader)
-        df['label'] = predictions
-
+        df = process_tweets()
         n = request.args.get('n')
         categories, counts = get_top_categories(df, n)
 
