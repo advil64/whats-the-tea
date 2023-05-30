@@ -1,14 +1,15 @@
 from collections import Counter
-from model import *  # load_model
+from model import TweetClassifier  # load_model
 from .config import Config
 import json
-import spacy
 import numpy as np
+import spacy
 import torch
 import tweepy
 
 nlp = spacy.load('en_core_web_lg')
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+model = TweetClassifier().to(device)  # load_model('class_model.pt')
 config = Config()
 batch_size = 64
 
@@ -23,10 +24,8 @@ client = tweepy.Client(
 with open('../../accounts.json') as f:
     accounts = json.load(f)
 
-with open('../labels.json') as f:
-    labels = json.load(f)
-
-model = TweetClassifier().to(device)  # load_model('class_model.pt')
+with open('../topics.json') as f:
+    topics = json.load(f)
 
 
 def get_tweets(n):
@@ -38,27 +37,32 @@ def get_tweets(n):
     return tweets
 
 
-def filter_tweets(topic):
-    tweets = get_tweets(10)
+def process_tweets(tweets):
     tokenized_tweets = np.array([nlp(tweet).vector for tweet in tweets])
     tweet_tensors = torch.tensor(tokenized_tweets).unsqueeze(1)
 
-    predictions = model.predict(tweet_tensors, batch_size=batch_size)
-    indices = [i for i, value in enumerate(predictions) if value == labels.index(topic)] if labels.index(
-        topic) in predictions else None
+    return tweet_tensors
 
-    return [tweets[i] for i in indices] if indices else None
+
+def filter_tweets(topic):
+    tweets = get_tweets(10)
+    tweet_tensors = process_tweets(tweets)
+
+    predictions = model.predict(tweet_tensors, batch_size=batch_size)
+    topic_idx = topics.index(topic) if topic in topics else None
+    indices = np.where(predictions == topic_idx)[0]
+
+    return {'tweets': [tweets[i] for i in indices]}
 
 
 def get_top_categories(n):
-    tweets = get_tweets(n)
-    tokenized_tweets = np.array([nlp(tweet).vector for tweet in tweets])
-    tweet_tensors = torch.tensor(tokenized_tweets).unsqueeze(1)
+    tweets = get_tweets(10)
+    tweet_tensors = process_tweets(tweets)
 
     predictions = model.predict(tweet_tensors, batch_size=batch_size)
-    predictions = [labels[prediction] for prediction in predictions]
+    predictions = [topics[prediction] for prediction in predictions]
 
     counts = Counter(predictions)
-    sorted_counts = sorted(counts.items(), key=lambda x: x[1], reverse=True)
+    top_topics = counts.most_common(n)
 
-    return zip(*sorted_counts)
+    return [{'topic': topic, 'count': count} for topic, count in top_topics]

@@ -22,8 +22,8 @@ tweets_model = api.model('TweetInfo', {
 })
 
 categories_model = api.model('CategoryInfo', {
-    'categories': fields.List(fields.String()),
-    'counts': fields.List(fields.Integer())
+    'topic': fields.String(),
+    'count': fields.Integer()
 })
 
 # Documentation for Swagger UI
@@ -45,9 +45,8 @@ class TweetsResource(Resource):
     @api.marshal_with(tweets_model, mask=None)
     def get(self):
         topic = request.args.get('Topic')
-        filtered_tweets = filter_tweets(topic.upper())
 
-        return {'tweets': filtered_tweets}
+        return filter_tweets(topic.upper())
 
 
 @ns_categories.route('')
@@ -64,9 +63,5 @@ class CategoriesResource(Resource):
     @api.marshal_with(categories_model, mask=None)
     def get(self):
         n = request.args.get('n')
-        categories, counts = get_top_categories(n)
 
-        return {
-            'categories': categories,
-            'counts': counts
-        }
+        return get_top_categories(int(n))

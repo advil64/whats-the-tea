@@ -1,3 +1,4 @@
+import numpy as np
 import torch
 import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader
@@ -53,18 +54,18 @@ class TweetClassifier(nn.Module):
             correct_predictions = 0
             total_predictions = 0
 
-            for i, (inputs, labels) in enumerate(dataloader):
+            for i, (inputs, topics) in enumerate(dataloader):
                 inputs = inputs.to(device)
-                labels = labels.to(device)
+                topics = topics.to(device)
 
                 optimizer.zero_grad()
 
                 outputs = self(inputs)
                 _, predicted = torch.max(outputs.data, 1)
-                total_predictions += labels.size(0)
-                correct_predictions += (predicted == labels).sum().item()
+                total_predictions += topics.size(0)
+                correct_predictions += (predicted == topics).sum().item()
 
-                loss = criterion(outputs, labels)
+                loss = criterion(outputs, topics)
                 loss.backward()
                 optimizer.step()
 
@@ -86,9 +87,9 @@ class TweetClassifier(nn.Module):
             for batch in dataloader:
                 outputs = self(batch)
                 predicted = outputs.argmax(1)
-                predictions.extend(predicted.tolist())
+                predictions.extend(predicted)
 
-        return predictions
+        return np.array(predictions)
 
 
 def load_model(model_path):
