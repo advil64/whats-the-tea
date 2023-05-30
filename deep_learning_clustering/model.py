@@ -43,8 +43,8 @@ class TweetClassifier(nn.Module):
 
         return x
 
-    def train_model(self, tweets, batch_size, device, criterion, optimizer, num_epochs):
-        dataset = TweetsDataset(tweets)
+    def train_model(self, tweet_tensors, batch_size, device, criterion, optimizer, num_epochs):
+        dataset = TweetsDataset(tweet_tensors)
         dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
 
         self.train()
