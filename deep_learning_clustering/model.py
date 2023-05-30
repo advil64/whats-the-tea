@@ -11,21 +11,19 @@ class TweetClassifier(nn.Module):
         self.num_classes = num_classes
 
         self.conv1 = nn.Conv1d(1, self.out_channels, self.kernel_size)
-        self.relu1 = nn.ReLU()
-        self.max_pool1 = nn.MaxPool1d(self.kernel_size)
+        self.relu = nn.ReLU()
+        self.max_pool = nn.MaxPool1d(self.kernel_size)
         self.conv2 = nn.Conv1d(self.out_channels, self.out_channels, self.kernel_size)
-        self.relu2 = nn.ReLU()
-        self.max_pool2 = nn.MaxPool1d(self.kernel_size)
         self.dropout = nn.Dropout(self.p)
         self.fc = nn.Linear(32 * self.out_channels, self.num_classes)
 
     def forward(self, x):
         x = self.conv1(x)
-        x = self.relu1(x)
-        x = self.max_pool1(x)
+        x = self.relu(x)
+        x = self.max_pool(x)
         x = self.conv2(x)
-        x = self.relu2(x)
-        x = self.max_pool2(x)
+        x = self.relu(x)
+        x = self.max_pool(x)
         x = self.dropout(x)
         x = x.flatten(start_dim=1)
         x = self.fc(x)
