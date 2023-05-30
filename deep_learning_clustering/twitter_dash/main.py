@@ -21,14 +21,14 @@ tweets_model = api.model('TweetInfo', {
     'tweets': fields.List(fields.String())
 })
 
-categories_model = api.model('CategoryInfo', {
+topics_model = api.model('CategoryInfo', {
     'topic': fields.String(),
     'count': fields.Integer()
 })
 
 # Documentation for Swagger UI
 ns_tweets = api.namespace('tweets', description='Gets the Tweets from news-related accounts')
-ns_categories = api.namespace('categories', description='Gets the top n categories from the fetched Tweets')
+ns_topics = api.namespace('topics', description='Gets the top n topics from the fetched Tweets')
 
 
 @ns_tweets.route('')
@@ -49,19 +49,19 @@ class TweetsResource(Resource):
         return filter_tweets(topic.upper())
 
 
-@ns_categories.route('')
-class CategoriesResource(Resource):
+@ns_topics.route('')
+class TopicsResource(Resource):
     '''
-    Returns the Top n Categories from the fetched Tweets
+    Returns the Top n Topics from the fetched Tweets
     '''
 
     @api.param(
         'n',
-        description='The number of top categories to return',
+        description='The number of top topics to return',
         type='int',
     )
-    @api.marshal_with(categories_model, mask=None)
+    @api.marshal_with(topics_model, mask=None)
     def get(self):
         n = request.args.get('n')
 
-        return get_top_categories(int(n))
+        return get_top_topics(int(n))

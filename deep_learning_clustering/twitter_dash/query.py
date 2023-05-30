@@ -55,7 +55,7 @@ def filter_tweets(topic):
     return {'tweets': [tweets[i] for i in indices]}
 
 
-def get_top_categories(n):
+def get_top_topics(n):
     tweets = get_tweets(10)
     tweet_tensors = process_tweets(tweets)
 
