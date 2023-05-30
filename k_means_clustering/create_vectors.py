@@ -11,16 +11,18 @@ spark = SparkSession.builder \
     .config('spark.driver.maxResultSize', '8g') \
     .getOrCreate()
 
+ROOT = '/common/users/shared/cs543_fall22_group3/combined'
+
 # Load Word2Vec model and vector table
-model_path = '/common/users/shared/cs543_fall22_group3/models/word2vec'
+model_path = f'{ROOT}/models/word2vec'
 model = Word2VecModel.load(model_path)
 vector_table = model.getVectors()
 
 # Read processed dataframe
-processed_df = spark.read.json('/common/users/shared/cs543_fall22_group3/combined/combined_processed')
+processed_df = spark.read.json(f'{ROOT}/combined_processed')
 
 # Write tokens to text file
-tokens_output_path = '/common/users/shared/cs543_fall22_group3/combined/tokens.txt'
+tokens_output_path = f'{ROOT}/tokens.txt'
 processed_df.drop('selected_text') \
     .coalesce(1) \
     .write.format('text') \
@@ -29,7 +31,7 @@ processed_df.drop('selected_text') \
     .save(tokens_output_path)
 
 # Process tokens and calculate vectors
-vectors_output_path = '/common/users/shared/cs543_fall22_group3/combined/combined_vectors'
+vectors_output_path = f'{ROOT}/combined_vectors'
 vectors_df = None
 count = 0
 
@@ -54,4 +56,4 @@ with open(tokens_output_path) as file:
             vectors_df = vectors_df.union(temp_df)
 
 # Write vectors to JSON
-vectors_df.write.mode('Overwrite').json('/common/users/shared/cs543_fall22_group3/combined/combined_vectors')
+vectors_df.write.mode('Overwrite').json(f'{ROOT}/combined_vectors')

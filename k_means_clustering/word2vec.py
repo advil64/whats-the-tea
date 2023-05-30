@@ -10,8 +10,10 @@ spark = SparkSession.builder \
     .config('spark.driver.maxResultSize', '8g') \
     .getOrCreate()
 
+ROOT = f'/common/users/shared/cs543_fall22_group3'
+
 # Read JSON data
-df = spark.read.json('/common/users/shared/cs543_fall22_group3/combined/combined_processed')
+df = spark.read.json('{ROOT}/combined/combined_processed')
 
 # Configure Word2Vec
 word2vec = Word2Vec(vectorSize=1, seed=42, minCount=0, inputCol='cleaned_text', outputCol='output_vectors')
@@ -20,4 +22,4 @@ word2vec = Word2Vec(vectorSize=1, seed=42, minCount=0, inputCol='cleaned_text', 
 model = word2vec.fit(df)
 
 # Save the trained model
-model.write().overwrite().save('/common/users/shared/cs543_fall22_group3/models/word2vec')
+model.write().overwrite().save('{ROOT}/models/word2vec')
