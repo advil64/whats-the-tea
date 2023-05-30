@@ -3,6 +3,7 @@ from model import TweetClassifier  # load_model
 from .config import Config
 import json
 import numpy as np
+import re
 import spacy
 import torch
 import tweepy
@@ -38,7 +39,11 @@ def get_tweets(n):
 
 
 def process_tweets(tweets):
-    tokenized_tweets = np.array([nlp(tweet).vector for tweet in tweets])
+    pattern = re.compile(
+        r'"^https?:\\/\\/(?:www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b(?:[-a-zA-Z0-9()@:%_\\+.~#?&\\/=]*)$"')
+
+    cleaned_tweets = [re.sub(pattern, '', tweet) for tweet in tweets]
+    tokenized_tweets = np.array([nlp(tweet).vector for tweet in cleaned_tweets])
     tweet_tensors = torch.tensor(tokenized_tweets).unsqueeze(1)
 
     return tweet_tensors
