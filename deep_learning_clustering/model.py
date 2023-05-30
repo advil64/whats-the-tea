@@ -1,5 +1,17 @@
 import torch
 import torch.nn as nn
+from torch.utils.data import Dataset, DataLoader
+
+
+class TweetsDataset(Dataset):
+    def __init__(self, tweets):
+        self.tweets = tweets
+
+    def __len__(self):
+        return len(self.tweets)
+
+    def __getitem__(self, index):
+        return self.tweets[index]
 
 
 class TweetClassifier(nn.Module):
@@ -29,6 +41,54 @@ class TweetClassifier(nn.Module):
         x = self.fc(x)
 
         return x
+
+    def train_model(self, tweets, batch_size, device, criterion, optimizer, num_epochs):
+        dataset = TweetsDataset(tweets)
+        dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
+
+        self.train()
+
+        for epoch in range(num_epochs):
+            running_loss = 0.0
+            correct_predictions = 0
+            total_predictions = 0
+
+            for i, (inputs, labels) in enumerate(dataloader):
+                inputs = inputs.to(device)
+                labels = labels.to(device)
+
+                optimizer.zero_grad()
+
+                outputs = self(inputs)
+                _, predicted = torch.max(outputs.data, 1)
+                total_predictions += labels.size(0)
+                correct_predictions += (predicted == labels).sum().item()
+
+                loss = criterion(outputs, labels)
+                loss.backward()
+                optimizer.step()
+
+                running_loss += loss.item()
+
+            epoch_loss = running_loss / len(dataloader)
+            accuracy = (correct_predictions / total_predictions) * 100
+
+            print(f'Epoch {epoch + 1}/{num_epochs} | Loss: {epoch_loss:.4f} | Accuracy: {accuracy:.2f}%')
+
+    def predict(self, tweet_tensors, batch_size):
+        dataset = TweetsDataset(tweet_tensors)
+        dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=False)
+
+        self.eval()
+
+        predictions = []
+        with torch.no_grad():
+            for batch in dataloader:
+                outputs = self(batch)
+                predicted = outputs.argmax(1)
+                predictions.extend(predicted.tolist())
+
+        return predictions
 
 
 def load_model(model_path):
