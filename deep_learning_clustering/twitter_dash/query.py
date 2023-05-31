@@ -5,6 +5,7 @@ import json
 import numpy as np
 import re
 import spacy
+import string
 import torch
 import tweepy
 
@@ -39,10 +40,18 @@ def get_tweets(n):
 
 
 def process_tweets(tweets):
-    pattern = re.compile(
-        r'"^https?:\\/\\/(?:www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b(?:[-a-zA-Z0-9()@:%_\\+.~#?&\\/=]*)$"')
+    def clean_tweet(tweet):
+        cleaned_tweet = re.sub(pattern, '', tweet).lower()
+        doc = nlp(cleaned_tweet)
+        cleaned_tweet = ' '.join([token.text for token in doc if not token.is_stop and len(token.text) > 2])
+        cleaned_tweet = ''.join([char for char in cleaned_tweet if char not in string.punctuation])
 
-    cleaned_tweets = [re.sub(pattern, '', tweet) for tweet in tweets]
+        return cleaned_tweet
+
+    pattern = re.compile(
+        r'https?:\/\/(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_\+.~#?&\/=]*)')
+
+    cleaned_tweets = [clean_tweet(tweet) for tweet in tweets]
     tokenized_tweets = np.array([nlp(tweet).vector for tweet in cleaned_tweets])
     tweet_tensors = torch.tensor(tokenized_tweets).unsqueeze(1)
 
