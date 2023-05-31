@@ -1,63 +1,72 @@
-import argparse
-import json
-import torch
-import pathlib
+from pathlib import Path
 from sentence_transformers import SentenceTransformer, util
 from time import time
 from tqdm import tqdm
+import argparse
+import json
+import os
+import torch
 
-PREFIX = pathlib.Path('/common/users/shared/cs543_fall22_group3/combined/combined_raw')
 
-
-def load_labels(file_path):
+def load_topics(file_path):
     with open(file_path) as f:
-        labels = json.load(f)
+        topics = json.load(f)
 
-    return [label.lower() for label in labels]
+    return topics
 
 
 def load_articles(file_path):
-    with open(file_path) as f:
-        data = f.readlines()
+    file_list = os.listdir(file_path)
 
-    return [json.loads(sample)['selected_text'] for sample in tqdm(data)]
+    articles = []
+    for filename in tqdm(file_list):
+        if filename.endswith('.json'):
+            with open(os.path.join(file_path, filename)) as f:
+                for line in f:
+                    json_object = json.loads(line)
+                    articles.append(json_object['article'])
+
+    return articles
 
 
-def save_results(file_path, articles, assigned_labels):
+def save_results(file_path, articles, assigned_topics):
     with open(file_path, 'w') as f:
-        json.dump([{'article': article, 'label': label} for article, label in zip(articles, assigned_labels)], f)
+        json.dump([{'article': article, 'topic': topic} for article, topic in zip(articles, assigned_topics)], f)
 
 
 def main(args):
-    inpath = PREFIX / args.infile
-    outfile = args.outpath / args.infile
+    inpath = args.inpath
+    outpath = args.outpath
+
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    print(f'Using device: {device}')
 
     t0 = time()
 
-    labels = load_labels('labels.json')
-    print(f'Loaded {len(labels)} labels.')
+    topics = load_topics('topics.json')
+    print(f'Loaded {len(topics)} topics.')
 
     articles = load_articles(inpath)
     print(f'Loaded {len(articles)} articles.')
 
     model = SentenceTransformer('all-MiniLM-L6-v2')
-    label_embeddings = torch.stack([model.encode(x, convert_to_tensor=True) for x in labels])
-    article_embeddings = model.encode(articles, convert_to_tensor=True)
+    topic_embeddings = model.encode(topics, show_progress_bar=True, convert_to_tensor=True, device=device)
+    article_embeddings = model.encode(articles, show_progress_bar=True, convert_to_tensor=True, device=device)
 
-    cos_sims = util.cos_sim(article_embeddings, label_embeddings)
+    cos_sims = util.cos_sim(article_embeddings, topic_embeddings)
     max_idxs = torch.argmax(cos_sims, dim=1)
-    assigned_labels = [labels[x] for x in max_idxs]
+    assigned_topics = [topics[x] for x in max_idxs]
 
-    save_results(outfile, articles, assigned_labels)
-    print(f'Results saved to {outfile}.')
+    save_results(outpath, articles, assigned_topics)
+    print(f'Results saved to {outpath}.')
 
     print(f'Done. Took {round(time() - t0, 5)} s.')
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--infile', type=pathlib.Path, required=True)
-    parser.add_argument('--outpath', type=pathlib.Path, required=True)
+    parser.add_argument('--inpath', type=Path, required=True)
+    parser.add_argument('--outpath', type=Path, required=True)
     args = parser.parse_args()
 
     main(args)
