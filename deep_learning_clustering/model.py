@@ -4,20 +4,32 @@ import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader
 
 
-class TweetsDataset(Dataset):
-    def __init__(self, tweets):
-        self.tweets = tweets
+class TrainDataset(Dataset):
+    def __init__(self, tensors, labels):
+        self.tensors = tensors
+        self.labels = labels
 
     def __len__(self):
-        return len(self.tweets)
+        return len(self.tensors)
 
     def __getitem__(self, index):
-        return self.tweets[index]
+        return self.tensors[index], self.labels[index]
 
 
-class TweetClassifier(nn.Module):
+class TestDataset(Dataset):
+    def __init__(self, tensors):
+        self.tensors = tensors
+
+    def __len__(self):
+        return len(self.tensors)
+
+    def __getitem__(self, index):
+        return self.tensors[index]
+
+
+class Classifier(nn.Module):
     def __init__(self, out_channels=64, kernel_size=3, p=0.25, num_classes=42):
-        super(TweetClassifier, self).__init__()
+        super(Classifier, self).__init__()
         self.out_channels = out_channels
         self.kernel_size = kernel_size
         self.p = p
@@ -43,49 +55,45 @@ class TweetClassifier(nn.Module):
 
         return x
 
-    def train_model(self, tweet_tensors, batch_size, device, criterion, optimizer, num_epochs):
-        dataset = TweetsDataset(tweet_tensors)
+    def train_model(self, tensors, labels, batch_size, device, criterion, optimizer, num_epochs):
+        dataset = TrainDataset(tensors, labels)
         dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
 
         self.train()
 
         for epoch in range(num_epochs):
-            running_loss = 0.0
             correct_predictions = 0
             total_predictions = 0
 
-            for i, (inputs, topics) in enumerate(dataloader):
+            for inputs, labels in dataloader:
                 inputs = inputs.to(device)
-                topics = topics.to(device)
+                labels = labels.to(device)
 
                 optimizer.zero_grad()
 
                 outputs = self(inputs)
                 _, predicted = torch.max(outputs.data, 1)
-                total_predictions += topics.size(0)
-                correct_predictions += (predicted == topics).sum().item()
+                total_predictions += labels.size(0)
+                correct_predictions += (predicted == labels).sum().item()
 
-                loss = criterion(outputs, topics)
+                loss = criterion(outputs, labels)
                 loss.backward()
                 optimizer.step()
 
-                running_loss += loss.item()
-
-            epoch_loss = running_loss / len(dataloader)
             accuracy = (correct_predictions / total_predictions) * 100
 
-            print(f'Epoch {epoch + 1}/{num_epochs} | Loss: {epoch_loss:.4f} | Accuracy: {accuracy:.2f}%')
+            print(f'Epoch {epoch + 1}/{num_epochs} | Loss: {loss:.4f} | Accuracy: {accuracy:.2f}%')
 
-    def predict(self, tweet_tensors, batch_size):
-        dataset = TweetsDataset(tweet_tensors)
+    def predict(self, tensors, batch_size):
+        dataset = TestDataset(tensors)
         dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=False)
 
         self.eval()
 
         predictions = []
         with torch.no_grad():
-            for batch in dataloader:
-                outputs = self(batch)
+            for inputs in dataloader:
+                outputs = self(inputs)
                 predicted = outputs.argmax(1)
                 predictions.extend(predicted)
 
@@ -95,7 +103,7 @@ class TweetClassifier(nn.Module):
 def load_model(model_path):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-    model = TweetClassifier().to(device)
+    model = Classifier().to(device)
     model.load_state_dict(torch.load(model_path, map_location=device))
 
     return model

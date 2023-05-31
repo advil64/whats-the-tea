@@ -1,5 +1,5 @@
 from collections import Counter
-from model import TweetClassifier  # load_model
+from model import load_model
 from .config import Config
 import json
 import numpy as np
@@ -10,7 +10,7 @@ import tweepy
 
 nlp = spacy.load('en_core_web_lg')
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-model = TweetClassifier().to(device)  # load_model('class_model.pt')
+model = load_model('model.pt')
 config = Config()
 batch_size = 64
 
