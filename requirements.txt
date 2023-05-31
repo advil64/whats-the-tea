@@ -5,6 +5,7 @@ gensim
 nltk
 numpy
 pandas
+pyspark
 python-dotenv
 scikit-learn
 sentence-transformers
