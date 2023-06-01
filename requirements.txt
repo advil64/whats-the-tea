@@ -5,6 +5,7 @@ gensim
 nltk
 numpy
 pandas
+plotly
 pyspark
 python-dotenv
 scikit-learn
