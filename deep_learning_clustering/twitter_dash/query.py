@@ -9,10 +9,10 @@ import string
 import torch
 import tweepy
 
+config = Config()
 nlp = spacy.load('en_core_web_lg')
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 model = load_model('model.pt')
-config = Config()
 batch_size = 64
 
 client = tweepy.Client(
