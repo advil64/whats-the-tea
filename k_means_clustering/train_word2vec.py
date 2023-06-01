@@ -11,7 +11,7 @@ spark = SparkSession.builder \
 ROOT = '../'
 
 # Read JSON data
-processed_df = spark.read.json(f'{ROOT}/dataset/combined/combined_processed')
+processed_df = spark.read.json(f'{ROOT}/datasets/combined/combined_processed')
 
 # Configure Word2Vec
 word2vec = Word2Vec(vectorSize=1, seed=42, minCount=0, inputCol='article', outputCol='article_embedding')
