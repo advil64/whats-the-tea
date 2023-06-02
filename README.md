@@ -16,6 +16,19 @@ We are using multiple datasets for this project:
 **All the News 2.0**: https://components.one/datasets/all-the-news-2-news-articles-dataset/ \
 **India News Headlines Dataset**: https://www.kaggle.com/datasets/therohk/india-headlines-news-dataset
 
+## Installation
+- Create a `.env` file in the root directory with the following fields for Tweepy user authentication:
+```
+bearer_token=YOUR_BEARER_TOKEN
+consumer_key=YOUR_CONSUMER_KEY
+consumer_secret=YOUR_CONSUMER_SECRET
+access_token=YOUR_ACCESS_TOKEN
+access_token_secret=YOUR_ACCESS_TOKEN_SECRET
+```
+- Install required libraries: `pip install -r requirements.txt`
+- In the `deep_learning_clustering/twitter_dash` directory, run the server: `flask --app main.py run`
+- Open a web browser and visit the following URL: `http://127.0.0.1:5000/api/docs`
+
 ## Contributors
 <table>
   <tr>
